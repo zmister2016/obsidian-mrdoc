@@ -1,96 +1,74 @@
-# Obsidian Sample Plugin
+A plugin that synchronizes documents between Obsidian and MrDoc.
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+- Provides a new solution for local document remote synchronization for Obsidian users.
+- Offers a new solution for online document browsing for local Obsidian documents.
+- Provides a new solution for offline writing, saving, and synchronizing documents for MrDoc users.
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+## System Requirements
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+- MrDoc Professional Edition `v1.3.6+` or MrDoc Open Source Edition `v0.9.2+`.
+- Obsidian `v1.4.16+`.
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## Correspondence of Basic Concepts
 
-## First time developing plugins?
+- Obsidian's "Vault" corresponds to MrDoc's "Collection."
+- "Markdown files" in Obsidian Vault correspond to "Documents" in MrDoc.
+- "Folders" in Obsidian Vault correspond to "Documents" in MrDoc that contain subordinate documents.
 
-Quick starting guide for new plugin devs:
+## Plugin Rules
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+### Vault
 
-## Releasing new releases
+In Obsidian, you need to select the target collection of MrDoc on the plugin's settings page.
+> If you want to synchronize documents to a new MrDoc collection, click the "Create New" button to create a collection first and then select it.
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+### Pull Remote Documents
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+The plugin adds a functional icon button to the left toolbar, used to pull all documents from the specified MrDoc collection to Obsidian locally. After clicking the pull operation, the plugin retrieves information about all documents in the specified collection and prepares to write it to the local Obsidian.
 
-## Adding your plugin to the community plugin list
+- If there is no file/folder with the same name locally, create a new file/folder.
+- If a local file with the same name already exists, check whether there is a mapping relationship between the local file and the remote document:
+    - If a mapping relationship exists, compare the last modification time of the local file and the remote document:
+        - If the local file's last modification time is newer than the remote document, skip.
+        - If the local file's last modification time is older than the remote document, overwrite the local file with the content of the remote document.
+    - If there is no mapping relationship, skip.
+- If a local folder with the same name already exists, skip.
 
-- Check https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+### Create New File/Folder
 
-## How to use
+When creating a new file/folder locally in Obsidian, the plugin automatically creates a document in the MrDoc collection specified and maintains a mapping relationship between the local document and the remote document within the plugin.
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+### Rename File/Folder
 
-## Manually installing the plugin
+When renaming a file/folder locally in Obsidian, the plugin automatically modifies the corresponding document title on MrDoc.
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+### Modify File
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+After modifying the file content, you can click the "Sync to MrDoc" menu in the editor's top-right "More Options" to push the document's updates to MrDoc.
 
-## Funding URL
+You can also hover over a specific document in the left file list of the Obsidian software, right-click the mouse to bring up the context menu, and click the "Sync to MrDoc" menu to push the document's updates to MrDoc.
 
-You can include funding URLs where people who use your plugin can financially support it.
+In addition, the plugin provides a "Real-time Push" option. You can enable "Real-time Update Document Content" on the plugin's settings page. In this way, when you modify the file content in Obsidian, the plugin will instantly update the latest file content to MrDoc.
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+### Delete File/Folder
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+If there is a mapping relationship between the local file/folder in Obsidian and MrDoc, deleting the file/folder locally will also synchronize the deletion of the document in MrDoc (soft delete, the document goes to the trash).
 
-If you have multiple URLs, you can also do:
+### Image Handling
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+For image handling, the plugin provides two options:
 
-## API Documentation
+- Save local images
+- Save clipboard images
 
-See https://github.com/obsidianmd/obsidian-api
+**1. Save Local Images**
+
+When you paste or drag local images into the Obsidian editor, the plugin uploads the images to MrDoc, then returns the image link address from MrDoc and inserts it into the Obsidian editor.
+
+**2. Save Clipboard Images**
+
+When you copy text elsewhere to paste into the Obsidian editor, the plugin extracts image links from it and uploads them to MrDoc. It then returns the image link address from MrDoc, replacing the original image links in the text.
+
+### Reset Mapping Relationship
+
+After mapping relationships are established between Obsidian local files and MrDoc documents, if you need to break their binding, you can click "Reset Document Mapping" on the plugin's settings page. This way, operations on Obsidian local files will not be synchronized to MrDoc.
