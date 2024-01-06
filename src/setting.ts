@@ -95,6 +95,10 @@ export class MrdocSettingTab extends PluginSettingTab {
 				text
 					.setPlaceholder('请输入你的 MrDoc 用户 Token')
 					.setValue(this.plugin.settings.mrdocToken)
+					.onChange(async(value) =>{
+						this.plugin.settings.mrdocToken = value;
+						await this.plugin.saveSettings();
+					})
 					.inputEl.type = 'password'; // 设置输入框类型为密码
 				});
 
