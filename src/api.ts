@@ -6,20 +6,18 @@ import MrdocPlugin from "./main";
 export class MrdocApiReq{
     settings: MrdocPluginSettings;
     plugin: MrdocPlugin;
-    private mrdocUrl: string;
-    private mrdocToken: string;
 
     constructor(settings: MrdocPluginSettings, plugin: MrdocPlugin) {
         this.settings = settings;
         this.plugin = plugin;
-        this.mrdocUrl = settings.mrdocUrl;
-        this.mrdocToken = settings.mrdocToken;
       }
 
     // 定义一个公共的 Axios 请求类
     private async sendRequest(apiPath: string, doc: any, method: string = 'post'): Promise<any> {
-      const apiUrl = `${this.mrdocUrl}/api/${apiPath}/`;
-      const queryString = `token=${this.mrdocToken}`;
+      const mrdocUrl = this.plugin.settings.mrdocUrl;
+      const mrdocToken = this.plugin.settings.mrdocToken;
+      const apiUrl = `${mrdocUrl}/api/${apiPath}/`;
+      const queryString = `token=${mrdocToken}`;
       
       let config: AxiosRequestConfig = {
           url: `${apiUrl}?${queryString}`,
@@ -98,13 +96,13 @@ export class MrdocApiReq{
                 url:path
             }
             const resp = await this.sendRequest('upload_img_url', doc);
-            console.log(resp)
+            // console.log(resp)
             if(resp.code == 0){
                 resp.data['originalFile'] = file;
                 resp.data['success'] = true;
                 result.push(resp.data)
             }else{
-                console.log("图片转存失败：",path)
+                // console.log("图片转存失败：",path)
                 result.push({originalURL:path,url:path,originalFile:file,success:false})
             }
         }
