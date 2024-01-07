@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-mrdoc-plugin",
 	"version": "1.0.3",
 	"description": "A plugin that synchronizes documents between Obsidian and MrDoc.",
 	"main": "main.js",

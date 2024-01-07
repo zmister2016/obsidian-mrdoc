@@ -1,6 +1,6 @@
 {
-	"id": "obsidian-mrdoc-plugin",
-	"name": "MrDoc Plugin",
+	"id": "mrdoc",
+	"name": "MrDoc",
 	"version": "1.0.3",
 	"minAppVersion": "1.4.16",
 	"description": "A plugin that synchronizes documents between Obsidian and MrDoc.",
