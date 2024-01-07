@@ -140,7 +140,7 @@ export default class MrdocPlugin extends Plugin {
 				// console.log("pull状态修改为false：",this.settings.pulling)
 			// }
 		}else{
-			let msg = "拉取 MrDoc 文档失败"
+			let msg = "【拉取失败】MrDoc 文档"
 			new Notice(msg)
 			this.pullInfoArray.push(msg)
 		}
@@ -170,7 +170,7 @@ export default class MrdocPlugin extends Plugin {
 		let data = {did:doc.id}
 		let docContent = await this.req.getDoc(data)
 		if(!docContent.status){
-			new Notice(`拉取文档${doc.name}内容失败！`);
+			new Notice(`【拉取失败】文档：${doc.name}`);
 			return
 		};
 		
@@ -183,7 +183,7 @@ export default class MrdocPlugin extends Plugin {
 			const file = await this.app.vault.create(filePath,docContent.data.md_content)
 			this.settings.fileMap.push({ path: file.path, doc_id: doc.id });
 			this.saveSettings()
-			let msg = `文件${doc.name}已创建`
+			let msg = `【已创建】文件：${doc.name}`
 			new Notice(msg)
 			this.pullInfoArray.push(msg)
 		}else if(mapExits){ // 如果存在文档映射
@@ -203,12 +203,12 @@ export default class MrdocPlugin extends Plugin {
 				this.saveSettings()
 				await this.compareFileModified(fileExits,docContent)
 			}else{
-				let msg = `文件${doc.name}已存在，跳过！`
+				let msg = `【已存在】文件：${doc.name}`
 				new Notice(msg)
 				this.pullInfoArray.push(msg)
 			}
 		}else{
-			let msg = `文件${doc.name}已存在，跳过！`
+			let msg = `【已存在】文件：${doc.name}`
 			new Notice(msg)
 			this.pullInfoArray.push(msg)
 		}
@@ -223,11 +223,11 @@ export default class MrdocPlugin extends Plugin {
 		if (localModified.getTime() < mrdocModified.getTime()) {
 			// console.log("Obsidian 本地文件比远程文件旧");
 			const modify = await this.app.vault.modify(file,doc.data.md_content)
-			let msg = `文件${doc.data.name}内容已更新！`
+			let msg = `【已更新】文件：${doc.data.name}`
 			new Notice(msg)
 			this.pullInfoArray.push(msg)
 		}else{
-			let msg = `文件${doc.data.name}本地内容无需更新！`
+			let msg = `【无需更新】文件：${doc.data.name}`
 			new Notice(msg)
 			this.pullInfoArray.push(msg)
 		}
@@ -238,12 +238,12 @@ export default class MrdocPlugin extends Plugin {
 		const fileExits = this.app.vault.getAbstractFileByPath(`${docPath}`)
 		if(fileExits){
 			// console.log(`文件夹${docPath}已存在`,fileExits)
-			new Notice(`文件夹${docPath}已存在`)
+			new Notice(`【已存在】文件夹：${docPath}`)
 		}else{
 			const file = await this.app.vault.createFolder(`${docPath}`)
 			this.settings.fileMap.push({ path: file.path, doc_id: docId });
 			this.saveSettings()
-			new Notice(`文件夹${docPath}已创建`)
+			new Notice(`【已创建】文件夹：${docPath}`)
 		}
 	}
 
