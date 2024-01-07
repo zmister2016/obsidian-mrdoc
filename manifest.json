@@ -1,9 +1,9 @@
 {
 	"id": "obsidian-mrdoc-plugin",
 	"name": "MrDoc Plugin",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"minAppVersion": "1.4.16",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
+	"description": "A plugin that synchronizes documents between Obsidian and MrDoc.",
 	"author": "zmister",
 	"authorUrl": "https://mrdoc.pro",
 	"fundingUrl": "https://mrdoc.pro",
