@@ -50,17 +50,17 @@ export default class MrdocPlugin extends Plugin {
 		// statusBarItemEl.setText('Status Bar Text');
 
 		// 注册快捷键
-        this.addCommand({
-            id: 'push-file-to-mrdoc', // 唯一标识符
-            name: 'Push Content To MrDoc', // 显示的名称
-            callback: this.onSave.bind(this), // 回调方法
-            hotkeys: [
-                {
-                    modifiers: ['Mod'], // Mod 表示 Command 键（Mac）或 Ctrl 键（Windows）
-                    key: 'M',
-                },
-            ],
-        });
+        // this.addCommand({
+        //     id: 'push-file-to-mrdoc', // 唯一标识符
+        //     name: 'Push Content To MrDoc', // 显示的名称
+        //     callback: this.onSave.bind(this), // 回调方法
+        //     hotkeys: [
+        //         {
+        //             modifiers: ['Mod'], // Mod 表示 Command 键（Mac）或 Ctrl 键（Windows）
+        //             key: 'M',
+        //         },
+        //     ],
+        // });
 		// This adds a complex command that can check whether the current state of the app allows execution of the command
 		// this.addCommand({
 		// 	id: 'open-sample-modal-complex',
