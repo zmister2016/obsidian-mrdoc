@@ -72,10 +72,7 @@ export class PulledModal extends Modal {
 		contentEl.empty();  // 清空内容
         contentEl.createEl('h2', { text: '已完成拉取！' });
         contentEl.createEl('p', { text: '已完成从 MrDoc 拉取文档到本地，详情如下：' });
-        const contentDiv = contentEl.createEl("div");
-        contentDiv.style.maxHeight = '300px';
-        contentDiv.style.overflowY = 'auto';
-        contentDiv.style.marginBottom = '10px';
+        const contentDiv = contentEl.createEl("div",{cls:'pulled-modal-div'});
         this.infoArray.forEach((data)=>{
             contentDiv.createEl('li', { text: data });
         })

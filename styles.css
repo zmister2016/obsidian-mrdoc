@@ -9,3 +9,8 @@ If your plugin does not need CSS, delete this file.
 .mrdoc-settings-input input{
     width:300px;
 }
+.pulled-modal-div{
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
