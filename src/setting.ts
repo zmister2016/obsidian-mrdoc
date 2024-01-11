@@ -1,9 +1,10 @@
 import { App, PluginSettingTab, Setting, Notice,Modal } from "obsidian";
 import MrdocPlugin from "./main";
 import { createElement, Eye, EyeOff } from "lucide";
-import axios from 'axios';
 import type { TextComponent } from "obsidian";
+import { requestUrl,RequestUrlParam, } from "obsidian";
 import { MrdocApiReq } from "./api";
+import { processMrdocUrl } from "./utils";
 
 export interface MrdocPluginSettings {
 	mrdocUrl: string;
@@ -111,7 +112,7 @@ export class MrdocSettingTab extends PluginSettingTab {
 				  try {
 					new Notice("正在测试连接……")
 					// 读取设置中的 URL 和 Token
-					const mrdocUrl = this.plugin.settings.mrdocUrl;
+					const mrdocUrl = processMrdocUrl(this.plugin.settings.mrdocUrl);
 					const mrdocToken = this.plugin.settings.mrdocToken;
 		
 					if (!mrdocUrl || !mrdocToken) {
@@ -126,8 +127,8 @@ export class MrdocSettingTab extends PluginSettingTab {
 					const queryString = `token=${mrdocToken}`;
 		
 					// 发起 API 请求
-					const response = await axios.get(`${apiUrl}?${queryString}`);
-					if (response.data.status){
+					const response = await requestUrl({url:`${apiUrl}?${queryString}`});
+					if (response.json.status){
 						new Notice("测试连接成功！")
 					}
 				  } catch (error) {
@@ -196,7 +197,7 @@ export class MrdocSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		  .setName('实时更新文档内容')
-		  .setDesc('当你修改文档/文件夹时，实时地将其变动更新到 MrDoc。你还可以通过快捷键Ctrl + M 进行文档同步更新。')
+		  .setDesc('当你修改文档/文件夹时，实时地将其变动更新到 MrDoc。你还可以通过文件菜单「同步至 MrDoc」进行文档同步更新。')
 		  .addToggle((toggle) => {
 			toggle
 			  .setValue(this.plugin.settings.realtimeSync)
@@ -236,7 +237,7 @@ export class MrdocSettingTab extends PluginSettingTab {
 		try {
 			new Notice("正在获取文集列表……")
 			// 读取设置中的 URL 和 Token
-			const mrdocUrl = this.plugin.settings.mrdocUrl;
+			const mrdocUrl = processMrdocUrl(this.plugin.settings.mrdocUrl);
 			const mrdocToken = this.plugin.settings.mrdocToken;
 
 			if (!mrdocUrl || !mrdocToken) {
@@ -248,10 +249,10 @@ export class MrdocSettingTab extends PluginSettingTab {
 			const queryString = `token=${mrdocToken}`;
 
 			// 发起 API 请求
-			const response = await axios.get(`${apiUrl}?${queryString}`);
-			if (response.data.status){
+			const response = await requestUrl({url:`${apiUrl}?${queryString}`});
+			if (response.json.status){
 				new Notice("获取文集列表成功！")
-				this.plugin.settings.projects = response.data.data
+				this.plugin.settings.projects = response.json.data
 			}
 		  } catch (error) {
 			new Notice(`获取文集列表异常: ${error.message}`);
@@ -261,7 +262,7 @@ export class MrdocSettingTab extends PluginSettingTab {
 
 	// 新建文集
 	async createProject(name:string): Promise<void> {
-		console.log("文件参数为：",name)
+		// console.log("文件参数为：",name)
 		if(typeof name === "string" && name.trim() !== ""){
 			let doc = {name: name}
 			const resp = await this.plugin.req.createProject(doc)

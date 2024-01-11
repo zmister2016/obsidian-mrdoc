@@ -103,3 +103,30 @@ export function bufferToArrayBuffer(buffer: Buffer) {
   }
   return arrayBuffer;
 }
+
+export function processMrdocUrl(url:string) {
+  // 移除末尾的斜杠
+  const mrdocUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+  return mrdocUrl;
+} 
+
+// 将文件转换为 Base64 字符串的函数
+export async function imgFileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+          if (typeof reader.result === 'string') {
+              resolve(reader.result);
+          } else {
+              reject(new Error('Failed to read file as Base64.'));
+          }
+      };
+
+      reader.onerror = (error) => {
+          reject(error);
+      };
+
+      reader.readAsDataURL(file);
+  });
+}

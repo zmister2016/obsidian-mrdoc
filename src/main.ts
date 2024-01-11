@@ -3,6 +3,7 @@ import { MrdocSettingTab, MrdocPluginSettings, DEFAULT_SETTINGS } from './settin
 import Helper from "./helper";
 import { MrdocApiReq } from "./api";
 import { PullMrdocModal,LoadingModal,PulledModal } from "./modals";
+import { imgFileToBase64,processMrdocUrl } from './utils';
 // Remember to rename these classes and interfaces!
 
 // 实例化一个插件
@@ -381,15 +382,16 @@ export default class MrdocPlugin extends Plugin {
 					let value = this.helper.getValue();
 					res.map(item =>{
 						if(!item.success) return;
+						let mrdocUrl = processMrdocUrl(this.settings.mrdocUrl)
 						if(item.originalFile.title == ""){
 							value = value.replaceAll(
 								`![${item.originalFile.alt}](${item.originalURL})`,
-								`![${item.originalFile.alt}](${this.settings.mrdocUrl}${item.url})`
+								`![${item.originalFile.alt}](${mrdocUrl}${item.url})`
 							  );
 						}else{
 							value = value.replaceAll(
 								`![${item.originalFile.alt}](${item.originalURL} "${item.originalFile.title}")`,
-								`![${item.originalFile.alt}](${this.settings.mrdocUrl}${item.url} "${item.originalFile.title}")`
+								`![${item.originalFile.alt}](${mrdocUrl}${item.url} "${item.originalFile.title}")`
 							  );
 						}
 					});
@@ -410,12 +412,13 @@ export default class MrdocPlugin extends Plugin {
 						this.insertTemporaryText(editor, pasteId);
 						const name = file.name;
 						const imgData = {
-							image:file
+							'base64':await imgFileToBase64(file)
 						};
 						const resp = await this.req.uploadImage(imgData)
 						// console.log(resp)
 						if(resp.success == 1){
-							let imgUrl = `${this.settings.mrdocUrl}${resp.url}`
+							let mrdocUrl = processMrdocUrl(this.settings.mrdocUrl)
+							let imgUrl = `${mrdocUrl}${resp.url}`
 							this.embedMarkDownImage(editor, pasteId, imgUrl, name);
 						}else{
 							new Notice("粘贴图片上传失败")
@@ -447,12 +450,13 @@ export default class MrdocPlugin extends Plugin {
 				this.insertTemporaryText(editor, pasteId);
 				const name = file.name;
 				const imgData = {
-					image:file
+					'base64':await imgFileToBase64(file)
 				};
 				const resp = await this.req.uploadImage(imgData)
 				// console.log(resp)
 				if(resp.success == 1){
-					let imgUrl = `${this.settings.mrdocUrl}${resp.url}`
+					let mrdocUrl = processMrdocUrl(this.settings.mrdocUrl)
+					let imgUrl = `${mrdocUrl}${resp.url}`
 					this.embedMarkDownImage(editor, pasteId, imgUrl, name);
 				}else{
 					new Notice("拖入图片上传失败")

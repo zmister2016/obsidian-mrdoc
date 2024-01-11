@@ -1,7 +1,7 @@
-import axios from 'axios';
-import { AxiosRequestConfig } from 'axios'; 
 import { MrdocPluginSettings } from "./setting";
 import MrdocPlugin from "./main";
+import { requestUrl,RequestUrlParam, } from "obsidian";
+import { processMrdocUrl } from "./utils";
 
 export class MrdocApiReq{
     settings: MrdocPluginSettings;
@@ -14,32 +14,41 @@ export class MrdocApiReq{
 
     // 定义一个公共的 Axios 请求类
     private async sendRequest(apiPath: string, doc: any, method: string = 'post'): Promise<any> {
-      const mrdocUrl = this.plugin.settings.mrdocUrl;
+      const mrdocUrl = processMrdocUrl(this.plugin.settings.mrdocUrl);
       const mrdocToken = this.plugin.settings.mrdocToken;
       const apiUrl = `${mrdocUrl}/api/${apiPath}/`;
       const queryString = `token=${mrdocToken}`;
       
-      let config: AxiosRequestConfig = {
-          url: `${apiUrl}?${queryString}`,
-          method: method,
-      };
+      let config : RequestUrlParam = {
+        url: `${apiUrl}?${queryString}`,
+        method: method,
+        headers:{
+          'Access-Control-Allow-Origin':'*',
+          'Content-Type': 'application/json',
+        },
+      }
+      
   
       // 根据请求方法设置参数
       if (method.toLowerCase() === 'get') {
-          config.params = doc;
+        //   config.params = doc;
+        const params = new URLSearchParams();
+
+        // 将对象中的键值对添加到 URLSearchParams 中
+        for (const key in doc) {
+            if (Object.hasOwnProperty.call(doc, key)) {
+                params.append(key, doc[key]);
+            }
+        }
+        const queryString = params.toString();
+        config.url = `${config.url}&${queryString}`
       } else {
-          const docData = new FormData();
-          for (const key in doc) {
-              if (Object.prototype.hasOwnProperty.call(doc, key)) {
-                  docData.append(key, doc[key]);
-              }
-          }
-          config.data = docData;
+          config.body = JSON.stringify(doc);
       }
-  
+      console.log(config)
       try {
-          const resp = await axios.request(config);
-          return resp.data;
+          const resp = await requestUrl(config);
+          return resp.json;
       } catch (error) {
           console.log(`${apiPath}请求出错：`, error);
           return { status: false };
