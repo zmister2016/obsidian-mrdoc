@@ -1,6 +1,5 @@
-import { App, PluginSettingTab, Setting, Notice,Modal } from "obsidian";
+import { App, PluginSettingTab, Setting, Notice,Modal,setIcon } from "obsidian";
 import MrdocPlugin from "./main";
-import { createElement, Eye, EyeOff } from "lucide";
 import type { TextComponent } from "obsidian";
 import { requestUrl,RequestUrlParam, } from "obsidian";
 import { MrdocApiReq } from "./api";
@@ -33,24 +32,16 @@ export const DEFAULT_SETTINGS: MrdocPluginSettings = {
 	pushing:false
 }
 
-const getEyesElements = () => {
-	const eyeEl = createElement(Eye);
-	const eyeOffEl = createElement(EyeOff);
-	return {
-	  eye: eyeEl.outerHTML,
-	  eyeOff: eyeOffEl.outerHTML,
-	};
-  };
   
 // 定义一个密码输入框显示函数
 const wrapTextWithPasswordHide = (text: TextComponent) => {
-	const { eye, eyeOff } = getEyesElements();
 	const hider = text.inputEl.insertAdjacentElement("afterend", createSpan());
 	// the init type of hider is "hidden" === eyeOff === password
-	hider.innerHTML = eyeOff;
+	setIcon(hider,'eye')
 	hider.addEventListener("click", (e) => {
 		const isText = text.inputEl.getAttribute("type") === "text";
-		hider.innerHTML = isText ? eyeOff : eye;
+		const icon = isText ? 'eye' : 'eye-off';
+		setIcon(hider, icon);
 		text.inputEl.setAttribute("type", isText ? "password" : "text");
 		text.inputEl.focus();
 	});
