@@ -45,7 +45,7 @@ export class MrdocApiReq{
       } else {
           config.body = JSON.stringify(doc);
       }
-      console.log(config)
+    //   console.log(config)
       try {
           const resp = await requestUrl(config);
           return resp.json;
