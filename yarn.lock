@@ -421,11 +421,6 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
-lucide@^0.292.0:
-  version "0.292.0"
-  resolved "https://registry.npmmirror.com/lucide/-/lucide-0.292.0.tgz#ff1558abbf73bdf991de1b0e4469d83c2ab23881"
-  integrity sha512-30r4YbM6nfLiDNzS/YSFLNt/g98XIxBfFwtxF9yYJNpYyAq+iwQx8kM6MWxnh21WuQSkAbEQyru46y5IbCoUjw==
-
 merge2@^1.3.0, merge2@^1.4.1:
   version "1.4.1"
   resolved "https://registry.npmmirror.com/merge2/-/merge2-1.4.1.tgz#4368892f885e907455a6fd7dc55c0c9d404990ae"
