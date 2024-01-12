@@ -51,10 +51,6 @@ export class LoadingModal extends Modal {
 		contentEl.empty();  // 清空内容
         contentEl.createEl('h2', { text: '任务进行中...' });
 
-        // 创建加载框
-        const loadingIndicator = contentEl.createEl('div', { cls: 'loading-indicator' });
-        loadingIndicator.innerHTML = '<div class="loading-spinner"></div>';
-
     }
 };
 
