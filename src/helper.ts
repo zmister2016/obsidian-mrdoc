@@ -89,6 +89,7 @@ export default class Helper {
     return fileArray;
   }
 
+  // 解析 HTML 文本的图片链接
   getHtmlImageLink(value: string): Image[] {
     const parser = new DOMParser();
     const doc = parser.parseFromString(value, 'text/html');
@@ -101,7 +102,7 @@ export default class Helper {
       const title = imgElement.getAttribute('title');
         if (path) {
           const name = alt || '';
-          const source = imgElement.outerHTML;
+          const source = imgElement.outerText;
           fileArray.push({
             path:path,
             alt: alt || '',
