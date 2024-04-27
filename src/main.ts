@@ -4,7 +4,7 @@ import Helper from "./helper";
 import { MrdocApiReq } from "./api";
 import { PullMrdocModal,LoadingModal,PulledModal } from "./modals";
 import { imgFileToBase64,processMrdocUrl } from './utils';
-// Remember to rename these classes and interfaces!
+import { imageExtension } from "./extension/imageExtension";
 
 // 实例化一个插件
 export default class MrdocPlugin extends Plugin {
@@ -44,7 +44,6 @@ export default class MrdocPlugin extends Plugin {
 		const pullIconEl = this.addRibbonIcon('file-down', '拉取 MrDoc 文档到本地', (evt: MouseEvent) => {
 			this.showPullModal()
 		});
-		pullIconEl.addClass('my-plugin-ribbon-class');
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		// const statusBarItemEl = this.addStatusBarItem();
@@ -99,6 +98,21 @@ export default class MrdocPlugin extends Plugin {
 		this.registerEvent(this.app.workspace.on('editor-paste',this.onEditorPaste.bind(this)));
 		this.registerEvent(this.app.workspace.on('editor-drop',this.onEditorDrop.bind(this)));
 
+		// markdown后处理
+		this.registerMarkdownPostProcessor((element, context) => {
+			const embImgs = element.querySelectorAll("div.internal-embed")
+			if(embImgs.length >0){
+				const embedDiv = embImgs.item(0);
+				const imgSrc = processMrdocUrl(this.settings.mrdocUrl) + embedDiv.getAttribute('src')
+				const imgEle = document.createElement('img')
+				imgEle.src = imgSrc;
+				element.removeAttribute('class');
+				element.removeAttribute('src');
+				element.empty();
+				element.appendChild(imgEle);
+			};
+		});
+		this.registerEditorExtension([imageExtension({plugin:this})]);
 	}
 
 	onunload() {
