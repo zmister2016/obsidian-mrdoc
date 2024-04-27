@@ -3,9 +3,8 @@
 	"name": "MrDoc",
 	"version": "1.0.5",
 	"minAppVersion": "1.4.16",
-	"description": "A plugin that synchronizes documents between Obsidian and MrDoc.",
+	"description": "A plugin that synchronizes documents between Obsidian and MrDoc(https://mrdoc.pro).",
 	"author": "zmister",
 	"authorUrl": "https://mrdoc.pro",
-	"fundingUrl": "https://mrdoc.pro",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }

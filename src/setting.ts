@@ -64,8 +64,8 @@ export class MrdocSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 
 		containerEl.empty();
-		containerEl.createEl('h1',{ text: 'MrDoc Plugin'});
-		containerEl.createEl('h2', { text: '基础' });
+		containerEl.createEl('h1',{ text: 'MrDoc'});
+		// containerEl.createEl('h2', { text: '基础' });
 
 		new Setting(containerEl)
 			.setName('MrDoc URL')
@@ -132,7 +132,7 @@ export class MrdocSettingTab extends PluginSettingTab {
 				});
 			});
 
-		containerEl.createEl('h2', { text: '功能' });
+		new Setting(containerEl).setName('功能').setHeading();
 
 		// 添加下拉选项框
 		new Setting(containerEl)
