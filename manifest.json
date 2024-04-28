@@ -6,5 +6,5 @@
 	"description": "A plugin that synchronizes documents between Obsidian and MrDoc(https://mrdoc.pro).",
 	"author": "zmister",
 	"authorUrl": "https://mrdoc.pro",
-	"isDesktopOnly": true
+	"isDesktopOnly": false
 }
