@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting,TFile,TFolder } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting,TAbstractFile,TFile,TFolder } from 'obsidian';
 import { MrdocSettingTab, MrdocPluginSettings, DEFAULT_SETTINGS } from './setting';
 import Helper from "./helper";
 import { MrdocApiReq } from "./api";
@@ -190,7 +190,7 @@ export default class MrdocPlugin extends Plugin {
 		};
 		
 		const filePath = `${docPath}.md`
-		const fileExits = this.app.vault.getAbstractFileByPath(filePath) // 获取本地文件是否存在
+		const fileExits = this.app.vault.getAbstractFileByPath(filePath) // 获取本地文件是否存在，其可能是文件也可能是文件夹
 		const mapExits = this.settings.fileMap.find(item => item.doc_id === doc.id) // 获取文档映射是否存在
 		const mapFileExits = (mapExits && mapExits.path) ? this.app.vault.getAbstractFileByPath(mapExits.path) : false; // 获取文档映射的本地文件是否存在
 
@@ -230,26 +230,32 @@ export default class MrdocPlugin extends Plugin {
 	}
 
 	// 对比文件最后修改时间判断是否需要更新内容
-	private async compareFileModified(file:any,doc:any){
-		const localModified = new Date(file.stat.mtime);
-		const mrdocModified = new Date(doc.data.modify_time);
-		// console.log(file.stat.mtime,doc.data.modify_time)
-		// console.log(localModified,mrdocModified)
-		if (localModified.getTime() < mrdocModified.getTime()) {
-			// console.log("Obsidian 本地文件比远程文件旧");
-			const modify = await this.app.vault.modify(file,doc.data.md_content)
-			let msg = `【已更新】文件：${doc.data.name}`
-			new Notice(msg)
-			this.pullInfoArray.push(msg)
-		}else{
-			let msg = `【无需更新】文件：${doc.data.name}`
-			new Notice(msg)
-			this.pullInfoArray.push(msg)
+	private async compareFileModified(file:TFile | TAbstractFile | TFolder,doc:any){
+		const fileType = this.isFileOrFolder(file)
+		if (fileType == 'file') {
+			const localModified = new Date(file.stat.mtime);
+			const mrdocModified = new Date(doc.data.modify_time);
+			// console.log(file.stat.mtime,doc.data.modify_time)
+			// console.log(localModified,mrdocModified)
+			if (localModified.getTime() < mrdocModified.getTime()) {
+				// console.log("Obsidian 本地文件比远程文件旧");
+				const modify = await this.app.vault.modify(file,doc.data.md_content)
+				let msg = `【已更新】文件：${doc.data.name}`
+				new Notice(msg)
+				this.pullInfoArray.push(msg)
+			}else{
+				let msg = `【无需更新】文件：${doc.data.name}`
+				new Notice(msg)
+				this.pullInfoArray.push(msg)
+			}
+		} else {
+
 		}
+		
 	}
 
 	// 创建文件夹
-	private async createFolder(docPath: string, docId:any){
+	private async createFolder(docPath: string, docId:string | number){
 		const fileExits = this.app.vault.getAbstractFileByPath(`${docPath}`)
 		if(fileExits){
 			// console.log(`文件夹${docPath}已存在`,fileExits)
@@ -262,7 +268,7 @@ export default class MrdocPlugin extends Plugin {
 		}
 	}
 
-	async toCreate(file: any){
+	async toCreate(file: TFile | TFolder){
 		const fileType = this.isFileOrFolder(file)
 		switch(fileType){
 			case "file":
@@ -278,7 +284,7 @@ export default class MrdocPlugin extends Plugin {
 		}
 	}
 
-	async toModify(file:any){
+	async toModify(file: TFile | TFolder){
 		const fileType = this.isFileOrFolder(file)
 		switch(fileType){
 			case 'file':
@@ -301,7 +307,7 @@ export default class MrdocPlugin extends Plugin {
 	}
 
 	// 响应「同步」按钮的点击
-	async onSyncItem(file: any){
+	async onSyncItem(file: TFile | TFolder){
 		// console.log("同步文档：",file)
 		// 判断是否存在映射
 		let found = this.settings.fileMap.find(item => item.path === file.path)
