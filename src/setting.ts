@@ -199,8 +199,8 @@ export class MrdocSettingTab extends PluginSettingTab {
 		  });
 		
 		new Setting(containerEl)
-			.setName('转存本地图片')
-			.setDesc('文档粘贴、拖入本地图片时，将图片上传至 MrDoc')
+			.setName('转存图片')
+			.setDesc('文档编辑器中粘贴、拖入本地和网络图片时，将图片转存至 MrDoc')
 			.addToggle((toggle) => {
 			  toggle
 				.setValue(this.plugin.settings.saveImg)
@@ -211,8 +211,8 @@ export class MrdocSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName('转存剪切板数据中的图片')
-			.setDesc('当你复制包含图片的文本时，将文本中的图片转存至 MrDoc')
+			.setName('转存剪切板文本中的图片')
+			.setDesc('如果剪切板文本中包含图片链接，将这些图片转存至 MrDoc')
 			.addToggle((toggle) => {
 			  toggle
 				.setValue(this.plugin.settings.applyImage)
