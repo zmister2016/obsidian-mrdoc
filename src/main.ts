@@ -136,6 +136,7 @@ export default class MrdocPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
+	// 从 MrDoc 拉取文档
 	async pullMrDoc(){
 		let doc = {
 			pid:this.settings.defaultProject
@@ -164,17 +165,19 @@ export default class MrdocPlugin extends Plugin {
 		pulled.open()
 	}
 
+	// 创建文件和文件夹
 	async createFilesAndFolders(data: any, basePath: string,) {
 		for (const doc of data) {
 			const cleanBasePath = basePath.replace(/^\//, '');
 			const docPath = cleanBasePath ? `${cleanBasePath}/${doc.name}` : doc.name;
-			if (doc.sub.length === 0) {// 如果 sub 为空，创建文件
+			const docIndexPath = cleanBasePath ? `${cleanBasePath}/${doc.name}/${doc.name}_index` : doc.name;
+			if (doc.sub.length === 0) {// 如果 sub 为空，文档不包含子文档，创建文件
 				// console.log(`创建文件：${docPath}`);
 				await this.createFile(docPath,doc);
-			} else {// 如果 sub 不为空，创建文件夹并递归处理 sub
+			} else {// 如果 sub 不为空，文档包含子文档，创建文件夹、文件并递归处理 sub
 				// console.log(`创建文件夹：${docPath}`);
-				await this.createFolder(docPath,doc.id);
-				await this.createFilesAndFolders(doc.sub, docPath);
+				await this.createFolder(docPath,doc.id); // 创建同名文件夹
+				await this.createFilesAndFolders(doc.sub, docPath); // 递归子文档
 			}
 		}
 	}
@@ -455,8 +458,9 @@ export default class MrdocPlugin extends Plugin {
 		if(!this.settings.saveImg) return;
 
 		let files = evt.dataTransfer.files;
-
-		if (files.length !== 0 && files[0].type.startsWith("image")) {
+		console.log(files[0].type)
+		if(files.length == 0)return;
+		if (files[0].type.startsWith("image")) { // 图片上传
             let sendFiles: Array<string> = [];
             let files = evt.dataTransfer.files;
             Array.from(files).forEach((item, index) => {
@@ -482,7 +486,49 @@ export default class MrdocPlugin extends Plugin {
 					new Notice("拖入图片上传失败")
 				}
 			}
-          }
+        }else{ // 附件上传
+			evt.preventDefault();
+			for (const file of files) {
+				let pasteId = (Math.random() + 1).toString(36).substr(2, 5); 
+				this.insertTemporaryText(editor, pasteId);
+				const name = file.name;
+				
+				try {
+				  // 读取文件数据
+				  const arrayBuffer = await file.arrayBuffer();
+				  
+				  // 调用上传附件 API
+				  const resp = await this.req.uploadAttachment(arrayBuffer, name);
+				  
+				  if(resp.status) {
+					// 获取附件URL
+					let mrdocUrl = processMrdocUrl(this.settings.mrdocUrl);
+					let attachmentUrl = '';
+					if(resp.data.url && resp.data.url.startsWith('attachment')) {
+						attachmentUrl = `${mrdocUrl}/media/${resp.data.url}`;
+					  } else {
+						attachmentUrl = resp.data.url;
+					  }
+					
+					// 创建Markdown链接文本并替换临时文本
+					let markDownLink = `[${name}](${attachmentUrl})`;
+					let progressText = MrdocPlugin.progressTextFor(pasteId);
+					MrdocPlugin.replaceFirstOccurrence(editor, progressText, markDownLink);
+				  } else {
+					new Notice("拖入附件上传失败: " + resp.data);
+					// 清除临时文本
+					let progressText = MrdocPlugin.progressTextFor(pasteId);
+					MrdocPlugin.replaceFirstOccurrence(editor, progressText, "");
+				  }
+				} catch (error) {
+				  console.error("附件上传处理错误:", error);
+				  new Notice("附件上传处理失败");
+				  // 清除临时文本
+				  let progressText = MrdocPlugin.progressTextFor(pasteId);
+				  MrdocPlugin.replaceFirstOccurrence(editor, progressText, "");
+				}
+			  }
+		}
 	}
 
 	// 解析文件的上级

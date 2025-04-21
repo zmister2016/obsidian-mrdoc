@@ -117,5 +117,53 @@ export class MrdocApiReq{
         }
         return result
     }
+
+    // 上传附件
+    async uploadAttachment(file: ArrayBuffer, fileName: string): Promise<any> {
+      const mrdocUrl = processMrdocUrl(this.plugin.settings.mrdocUrl);
+      const mrdocToken = this.plugin.settings.mrdocToken;
+      const apiUrl = `${mrdocUrl}/api/upload_file/`;
+      const queryString = `token=${mrdocToken}`;
+      
+      try {
+        // 创建二进制数据
+        const blob = new Blob([file]);
+        
+        // 使用 XMLHttpRequest，它在处理二进制数据方面更可靠
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          const formData = new FormData();
+          
+          // 添加文件到表单
+          formData.append('attachment_upload', blob, fileName);
+          
+          xhr.open('POST', `${apiUrl}?${queryString}`, true);
+          xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+          
+          xhr.onload = function() {
+            if (xhr.status === 200) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                resolve(response);
+              } catch(e) {
+                reject({status: false, data: '解析响应失败'});
+              }
+            } else {
+              reject({status: false, data: `请求失败，状态码: ${xhr.status}`});
+            }
+          };
+          
+          xhr.onerror = function() {
+            reject({status: false, data: '网络请求失败'});
+          };
+          
+          // 发送请求
+          xhr.send(formData);
+        });
+      } catch (error) {
+        console.log("上传附件请求出错：", error);
+        return { status: false, data: error.message || '未知错误' };
+      }
+    }
 }
 
