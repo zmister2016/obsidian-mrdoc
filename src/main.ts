@@ -566,12 +566,13 @@ export default class MrdocPlugin extends Plugin {
 
 	// 创建 Markdown 文件文档
 	async handleMarkdown(file:any) {
+		let content = await this.app.vault.cachedRead(file)
 		let parentValue = await this.getFileParent(file);
 		let doc = {
 		  pid: this.settings.defaultProject,
 		  title: file.basename,
 		  editor_mode: 1,
-		  doc: '',
+		  doc: content,
 		  parent_doc: parentValue,
 		};
 		return this.handleDocument(file, doc);
@@ -579,12 +580,13 @@ export default class MrdocPlugin extends Plugin {
 	
 	  // 创建 HTML 文件文档
 	  async handleHTML(file:any) {
+		let content = await this.app.vault.cachedRead(file)
 		let parentValue = await this.getFileParent(file);
 		let doc = {
 		  pid: this.settings.defaultProject,
 		  title: file.basename,
 		  editor_mode: 3,
-		  doc: '',
+		  doc: content,
 		  parent_doc: parentValue,
 		};
 		return this.handleDocument(file, doc);
