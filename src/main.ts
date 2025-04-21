@@ -480,7 +480,12 @@ export default class MrdocPlugin extends Plugin {
 				// console.log(resp)
 				if(resp.success == 1){
 					let mrdocUrl = processMrdocUrl(this.settings.mrdocUrl)
-					let imgUrl = `${mrdocUrl}${resp.url}`
+					let imgUrl = ""
+					if(resp.url.startsWith('http')){
+						imgUrl = resp.url;
+					}else{
+						imgUrl = `${mrdocUrl}${resp.url}`
+					}
 					this.embedMarkDownImage(editor, pasteId, imgUrl, name);
 				}else{
 					new Notice("拖入图片上传失败")
