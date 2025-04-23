@@ -372,6 +372,57 @@ export default class MrdocPlugin extends Plugin {
 		
 	}
 
+	/**
+	 * 上传本地图片并返回远程 URL
+	 */
+	async uploadLocalImage(file: TFile): Promise<string | null> {
+		try {
+			const arrayBuffer = await this.app.vault.readBinary(file);
+  			const imgBlob = new Blob([arrayBuffer]);		 
+			const imgData = {
+				'base64':await imgFileToBase64(imgBlob)
+			};
+			const resp = await this.req.uploadImage(imgData)
+
+			if (resp.success === 1) {
+				const mrdocUrl = processMrdocUrl(this.settings.mrdocUrl);
+				return resp.url.startsWith('http') ? resp.url : `${mrdocUrl}${resp.url}`;
+			} else {
+				console.warn("图片上传失败:", resp);
+				return null;
+			}
+		} catch (e) {
+			console.error("图片上传异常:", e);
+			return null;
+		}
+	}
+	
+	/**
+	 * 上传本地附件并返回远程 URL
+	 */
+	async uploadLocalAttachment(file: TFile): Promise<string | null> {
+		try {
+			const name = file.name;
+			const arrayBuffer = await this.app.vault.readBinary(file);
+			const resp = await this.req.uploadAttachment(arrayBuffer, name);
+		
+			if (resp.status) {
+				const mrdocUrl = processMrdocUrl(this.settings.mrdocUrl);
+				if (resp.data.url) {
+				return resp.data.url.startsWith("attachment")
+					? `${mrdocUrl}/media/${resp.data.url}`
+					: resp.data.url;
+				}
+			} else {
+				console.warn("附件上传失败:", resp);
+			}
+			return null;
+		} catch (e) {
+			console.error("附件上传异常:", e);
+			return null;
+		}
+	}
+
 	// 编辑器粘贴事件
 	async onEditorPaste(evt: ClipboardEvent,editor: Editor, view: MarkdownView){
 		// console.log("编辑器粘贴事件")
@@ -564,10 +615,85 @@ export default class MrdocPlugin extends Plugin {
 		}
 	}
 
+	// 转存obsidian文档中的图片附件到MrDoc
+	async processAssets(content: string, file: TFile): Promise<string> {
+		const app = this.app;
+		const vault = app.vault;
+		const folder = file.parent.path;
+		const regex = /!\[\[([^\]]+)\]\]|!\[.*?\]\((.*?)\)/g; // 匹配 ![[xxx]] 和 ![](xxx)
+	  
+		let matches;
+		while ((matches = regex.exec(content)) !== null) {
+		  const rawLink = matches[1] || matches[2];
+		  if (!rawLink) continue;
+	  
+		  const linkedFile = app.metadataCache.getFirstLinkpathDest(rawLink, folder);
+		  if (!linkedFile) continue;
+	  
+		  const ext = linkedFile.extension.toLowerCase();
+		  const name = linkedFile.name;
+		  let remoteUrl = '';
+	  
+		  try {
+			if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) {
+				console.log(linkedFile)
+				let imgUrl = await this.uploadLocalImage(linkedFile)
+			  if (imgUrl) {
+				content = content.replace(matches[0], `![](${imgUrl})`);
+			  } else {
+				console.warn(`图片上传失败: ${name}`);
+			  }
+			} else {
+			  const arrayBuffer = await vault.readBinary(linkedFile);
+			  const resp = await this.req.uploadAttachment(arrayBuffer, name);
+	  
+			  if (resp.status) {
+				const mrdocUrl = processMrdocUrl(this.settings.mrdocUrl);
+				if (resp.data.url) {
+				  remoteUrl = resp.data.url.startsWith('attachment')
+					? `${mrdocUrl}/media/${resp.data.url}`
+					: resp.data.url;
+	  
+				  const markdownLink = `[${name}](${remoteUrl})`;
+				  content = content.replace(matches[0], markdownLink);
+				}
+			  } else {
+				console.warn(`附件上传失败: ${name}`);
+			  }
+			}
+		  } catch (e) {
+			console.error(`上传失败: ${rawLink}`, e);
+		  }
+		}
+	  
+		return content;
+	  }
+	  
+
+	// 获取文件类型
+	getMimeType(ext: string): string {
+		const map: Record<string, string> = {
+			png: 'image/png',
+			jpg: 'image/jpeg',
+			jpeg: 'image/jpeg',
+			gif: 'image/gif',
+			webp: 'image/webp',
+			svg: 'image/svg+xml',
+		};
+		return map[ext] || 'application/octet-stream';
+	}
+
 	// 创建 Markdown 文件文档
 	async handleMarkdown(file:any) {
 		let content = await this.app.vault.cachedRead(file)
 		let parentValue = await this.getFileParent(file);
+
+		// 处理资源链接
+		if(this.settings.saveImg){
+			content = await this.processAssets(content, file);
+			this.app.vault.modify(file, content) // 重写文件内容
+		}
+
 		let doc = {
 		  pid: this.settings.defaultProject,
 		  title: file.basename,
@@ -624,6 +750,13 @@ export default class MrdocPlugin extends Plugin {
 		let found = this.settings.fileMap.find(item => item.path === file.path)
 		if(found){
 			let content = await this.app.vault.cachedRead(file)
+
+			// 处理资源链接
+			if(this.settings.saveImg){
+				content = await this.processAssets(content, file);
+				this.app.vault.modify(file, content) // 重写文件内容
+			}
+
 			let parentValue = await this.getFileParent(file);
 			// console.log(content)
 			let doc = {
