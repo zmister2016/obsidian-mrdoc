@@ -182,7 +182,7 @@ export default class MrdocPlugin extends Plugin {
 		}
 	}
 
-	// 获取文档内容并创建obsidian文件
+	// 获取文档内容并创建valut文件
 	async createFile(docPath:string,doc:any){
 		// console.log(docPath)
 		let data = {did:doc.id}
@@ -241,7 +241,7 @@ export default class MrdocPlugin extends Plugin {
 			// console.log(file.stat.mtime,doc.data.modify_time)
 			// console.log(localModified,mrdocModified)
 			if (localModified.getTime() < mrdocModified.getTime()) {
-				// console.log("Obsidian 本地文件比远程文件旧");
+				// console.log("本地文件比远程文件旧");
 				const modify = await this.app.vault.modify(file,doc.data.md_content)
 				let msg = `【已更新】文件：${doc.data.name}`
 				new Notice(msg)
@@ -615,7 +615,7 @@ export default class MrdocPlugin extends Plugin {
 		}
 	}
 
-	// 转存obsidian文档中的图片附件到MrDoc
+	// 转存valut文档中的图片附件到MrDoc
 	async processAssets(content: string, file: TFile): Promise<string> {
 		const app = this.app;
 		const vault = app.vault;

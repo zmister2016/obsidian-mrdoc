@@ -14,11 +14,11 @@ export class PullMrdocModal extends Modal {
   
 	  contentEl.createEl("h2", { text: "拉取 MrDoc 文档到本地" });
 	  // 添加对话框内容和交互元素
-	  contentEl.createEl('p', { text: '此操作将会从指定的 MrDoc 文集中拉取文档到 Obsidian 本地。' });
-	  contentEl.createEl('li', { text: 'Obsidian Vault 内存在的同名文件，将会跳过！' });
-      contentEl.createEl('li', { text: 'Obsidian 同层级下不支持同名文件/文件夹，故 MrDoc 的同层级同名文档只同步其中一个！' });
-	  contentEl.createEl('li', { text: '拉取的文件将与 MrDoc 文档建立映射关系，在 Obsidian 内对文件进行的操作将同步至 MrDoc！' });
-	  contentEl.createEl('li', { text: '请谨慎进行此操作，确保没有重要文件在 Obsidian Vault 内！' });
+	  contentEl.createEl('p', { text: '此操作将会从指定的 MrDoc 文集中拉取文档到本地 Vault 仓库。' });
+	  contentEl.createEl('li', { text: 'Vault 内存在的同名文件，将会跳过！' });
+      contentEl.createEl('li', { text: 'Vault 同层级下不支持同名文件/文件夹，故 MrDoc 的同层级同名文档只同步其中一个！' });
+	  contentEl.createEl('li', { text: '拉取的文件将与 MrDoc 文档建立映射关系，在 Vault 内对文件进行的操作将同步至 MrDoc！' });
+	  contentEl.createEl('li', { text: '请谨慎进行此操作，确保没有重要文件在 Vault仓库内！' });
 	  contentEl.createEl('br');
 	  const confirmButton = contentEl.createEl('button', {
 		text: '已知晓风险，确认拉取',

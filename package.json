@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-mrdoc-plugin",
 	"version": "1.0.6",
-	"description": "A plugin that synchronizes documents between Obsidian and MrDoc.",
+	"description": "A plugin that synchronizes documents between your vault and MrDoc.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
