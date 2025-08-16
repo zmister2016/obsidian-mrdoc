@@ -1,7 +1,7 @@
 {
 	"id": "mrdoc",
 	"name": "MrDoc",
-	"version": "1.0.6",
+	"version": "1.0.9",
 	"minAppVersion": "1.4.16",
 	"description": "Synchronize documents between your vault and MrDoc.",
 	"author": "zmister",
