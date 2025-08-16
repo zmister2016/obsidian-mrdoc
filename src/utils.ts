@@ -82,7 +82,7 @@ export function processMrdocUrl(url:string) {
   return mrdocUrl;
 } 
 
-// 将文件转换为 Base64 字符串的函数
+// 将File文件转换为 Base64 字符串的函数
 export async function imgFileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
       const reader = new FileReader();

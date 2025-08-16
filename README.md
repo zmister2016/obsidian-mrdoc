@@ -1,4 +1,6 @@
-A plugin that synchronizes documents between Obsidian and MrDoc.
+[MrDoc](https://github.com/zmister2016/MrDoc) is a self-hostable knowledge base and online document management system.
+
+This plugin synchronizes documents between Obsidian and MrDoc.
 
 - Provides a new solution for local document remote synchronization for Obsidian users.
 - Offers a new solution for online document browsing for local Obsidian documents.

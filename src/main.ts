@@ -322,7 +322,7 @@ export default class MrdocPlugin extends Plugin {
 	}
 
 	// 侦听文档的创建
-	async onVaultCreate(file: any) {
+	async onVaultCreate(file: TFile | TFolder) {
 		// if(!this.settings.realtimeSync) return;
 		if(this.settings.pulling) return;
 		// console.log(this.settings.pulling)
@@ -331,14 +331,14 @@ export default class MrdocPlugin extends Plugin {
 	}
 
 	// 侦听文档的修改
-	async onVaultModify(file: any) {
+	async onVaultModify(file: TFile | TFolder) {
 		if(!this.settings.realtimeSync) return;
 		// console.log("修改文件：",file)
 		this.toModify(file)
 	}
 
 	// 侦听文档的重命名
-	async onVaultRename(file: any,oldPath:string) {
+	async onVaultRename(file: TFile | TFolder,oldPath:string) {
 		// if(!this.settings.realtimeSync) return;
 		if(this.settings.pulling) return;
 		// console.log("文件重命名：",file,oldPath)
@@ -352,7 +352,7 @@ export default class MrdocPlugin extends Plugin {
 	}
 
 	// 侦听文档的删除
-	async onVaultDelete(file: any) {
+	async onVaultDelete(file: TFile | TFolder) {
 		// console.log("删除文件")
 		// 判断是否存在映射
 		let found = this.settings.fileMap.find(item => item.path === file.path);
@@ -588,7 +588,7 @@ export default class MrdocPlugin extends Plugin {
 	}
 
 	// 解析文件的上级
-	async getFileParent(file:any){
+	async getFileParent(file: TFile | TFolder){
 		if(file.parent.parent === null){ // 没有上级
 			return 0
 		}
@@ -684,7 +684,7 @@ export default class MrdocPlugin extends Plugin {
 	}
 
 	// 创建 Markdown 文件文档
-	async handleMarkdown(file:any) {
+	async handleMarkdown(file: TFile) {
 		let content = await this.app.vault.cachedRead(file)
 		let parentValue = await this.getFileParent(file);
 
@@ -705,7 +705,7 @@ export default class MrdocPlugin extends Plugin {
 	  }
 	
 	  // 创建 HTML 文件文档
-	  async handleHTML(file:any) {
+	  async handleHTML(file: TFile) {
 		let content = await this.app.vault.cachedRead(file)
 		let parentValue = await this.getFileParent(file);
 		let doc = {
@@ -719,7 +719,7 @@ export default class MrdocPlugin extends Plugin {
 	  }
 
 	  // 创建文件夹文档
-	async handleFolder(file:any) {
+	async handleFolder(file:TFile | TFolder) {
 		let parentValue = await this.getFileParent(file);
 		let doc = {
 		  pid: this.settings.defaultProject,
@@ -732,7 +732,7 @@ export default class MrdocPlugin extends Plugin {
 	  }
 	
 	  // 创建文档
-	  async handleDocument(file:any, doc:any) {
+	  async handleDocument(file: TFile | TFolder, doc:any) {
 		const res = await this.req.createDoc(doc);
 		if (res.status) {
 		  this.settings.fileMap.push({ path: file.path, doc_id: res.data });
@@ -744,7 +744,7 @@ export default class MrdocPlugin extends Plugin {
 	  }
 
 	  //  修改文件
-	  async handleModifyFile(file:any){
+	  async handleModifyFile(file: TFile){
 		// console.log(file)
 		// 判断是否存在映射
 		let found = this.settings.fileMap.find(item => item.path === file.path)
@@ -771,7 +771,7 @@ export default class MrdocPlugin extends Plugin {
 	  }
 
 	  // 修改文件夹
-	  async handleModifyFolder(file:any){
+	  async handleModifyFolder(file: TFile | TFolder){
 		// 判断是否存在映射
 		let found = this.settings.fileMap.find(item => item.path === file.path)
 		if(found){
@@ -802,7 +802,7 @@ export default class MrdocPlugin extends Plugin {
 	  }
 	  
 	// 判断文件类型
-	isFileOrFolder(file: any) {
+	isFileOrFolder(file: TFile | TFolder): "file" | "folder" | "unknown" {
 		if (file instanceof TFile) {
 			return "file";
 		} else if (file instanceof TFolder) {

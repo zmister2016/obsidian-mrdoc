@@ -1,4 +1,6 @@
-一个实现 Obsidian 与觅思文档之间文档同步的插件。
+[MrDoc 觅思文档](https://github.com/zmister2016/MrDoc)是一个可私有部署的知识库和在线文档管理系统。
+
+本插件用于 Obsidian 与觅思文档之间文档同步。
 
 - 为 Obsidian 用户提供了一个本地文档远程同步的新方案；
 - 为 Obsidian 本地文档提供了一个 Web 在线浏览文档的新方案；
