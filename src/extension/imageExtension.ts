@@ -8,12 +8,21 @@ import {
   } from "@codemirror/view";
 
 import { Extension} from "@codemirror/state";
-import { App} from 'obsidian';
+import { App,Vault} from 'obsidian';
 import MrdocPlugin from "src/main";
 import { processMrdocUrl } from "src/utils";
 
+// 扩展 Vault 类型，增加可选 config 属性
+interface VaultWithConfig extends Vault {
+  config?: {
+      livePreview?: boolean;
+  };
+}
+
+// 检查当前 Vault 是否开启了实时预览（Live Preview）
 const livePreviewActive = (app: App): boolean => {
-  return (app.vault as any).config?.livePreview;
+  const vault = app.vault as VaultWithConfig;
+  return !!vault.config?.livePreview;
 };
 
 // 定义一个装饰器，用于定位实时预览中的图片
