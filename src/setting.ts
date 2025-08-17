@@ -10,6 +10,7 @@ export interface MrdocPluginSettings {
 	mrdocToken: string;
 	saveImg: boolean;
 	applyImage: boolean;
+	assetWhitelist: Array<any>;
 	projects: object;
 	defaultProject: string;
 	fileMap: Array<any>;
@@ -24,6 +25,7 @@ export const DEFAULT_SETTINGS: MrdocPluginSettings = {
 	mrdocToken: '',
 	saveImg: true,
 	applyImage: false,
+	assetWhitelist: [],
 	projects: [],
 	defaultProject: '',
 	fileMap: [],
@@ -219,6 +221,36 @@ export class MrdocSettingTab extends PluginSettingTab {
 				.onChange((value) => {
 				  this.plugin.settings.applyImage = value;
 				  this.plugin.saveSettings();
+				});
+			});
+
+		new Setting(containerEl)
+			.setName("图片转存白名单")
+			.setClass('mrdoc-settings-input')
+			.setDesc("不需要转存的域名，多个用逗号分隔，图片转存时将跳过")
+			.addText((text) => {
+			  text
+				.setPlaceholder("例如：oss2.mrdoc.pro,cdn.example.com")
+				.setValue(this.plugin.settings.assetWhitelist?.join(",") || "")
+				.onChange(async (value) => {
+				  	// 先处理用户输入的域名
+					let whitelist = value
+						.split(",")
+						.map((v) => v.trim())
+						.filter((v) => v.length > 0);
+
+					// 自动加入 MrDoc 域名
+					try {
+						const mrdocDomain = new URL(this.plugin.settings.mrdocUrl).hostname;
+						if (!whitelist.includes(mrdocDomain)) {
+							whitelist.push(mrdocDomain);
+						}
+					} catch (e) {
+						console.warn("无法解析 MrDoc 域名:", e);
+					}
+					// console.log(whitelist)
+					this.plugin.settings.assetWhitelist = whitelist;
+					await this.plugin.saveSettings();
 				});
 			});
 
