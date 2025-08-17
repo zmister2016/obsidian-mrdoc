@@ -116,14 +116,17 @@ export default class Helper {
 
   }
 
-  hasBlackDomain(src: string, blackDomains: string) {
-    if (blackDomains.trim() === "") {
-      return false;
-    }
-    const blackDomainList = blackDomains.split(",").filter(item => item !== "");
-    let url = new URL(src);
-    const domain = url.hostname;
+  // 判断域名是否在白名单里面
+  hasWhitelistedDomain(src: string, whitelist: string[]) {
+    if (!whitelist || whitelist.length === 0) return false;
 
-    return blackDomainList.some(blackDomain => domain.includes(blackDomain));
+    try {
+        const url = new URL(src);
+        const domain = url.hostname;
+        return whitelist.some(whiteDomain => domain.includes(whiteDomain));
+    } catch (e) {
+        console.warn("URL 解析失败:", src, e);
+        return false;
+    }
   }
 }
