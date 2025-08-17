@@ -439,64 +439,67 @@ export default class MrdocPlugin extends Plugin {
 					.filter(image => image.path.startsWith("http"))
 					.filter(
 					  image =>
-						!this.helper.hasBlackDomain(image.path, this.settings.mrdocUrl)
+						!this.helper.hasWhitelistedDomain(image.path, this.settings.assetWhitelist)
 					)
 			  : this.helper.getImageLink(clipboardValue)
 					.filter(image => image.path.startsWith("http"))
 					.filter(
 					  image =>
-						!this.helper.hasBlackDomain(image.path, this.settings.mrdocUrl)
+						!this.helper.hasWhitelistedDomain(image.path, this.settings.assetWhitelist)
 					);
 			
-            if (imageList.length !== 0) {
-				// console.log("粘贴板图片列表：",imageList)
-				new Notice("外链图片转存中……")
-				this.req.uploadUrlImageBatch(imageList.map(img => img))
-				.then(res => {
-					let value = this.helper.getValue();
-					res.map(item =>{
-						if(!item.success) return;
-						let mrdocUrl = processMrdocUrl(this.settings.mrdocUrl)
-						if(item.originalFile.title == ""){
-							value = value.replaceAll(
-								`![${item.originalFile.alt}](${item.originalURL})`,
-								`![${item.originalFile.alt}](${mrdocUrl}${item.url})`
-							  );
-						}else{
-							value = value.replaceAll(
-								`![${item.originalFile.alt}](${item.originalURL} "${item.originalFile.title}")`,
-								`![${item.originalFile.alt}](${mrdocUrl}${item.url} "${item.originalFile.title}")`
-							  );
-						}
-					});
-					this.helper.setValue(value);
-					new Notice("外链图片转存完成！")
-				})
-			}
+			if (imageList.length === 0) return;
+			// console.log("粘贴板图片列表：",imageList)
+			new Notice("外链图片转存中……")
+			this.req.uploadUrlImageBatch(imageList.map(img => img))
+			.then(res => {
+				let value = this.helper.getValue();
+				res.map(item =>{
+					if(!item.success) return;
+					let mrdocUrl = processMrdocUrl(this.settings.mrdocUrl)
+					if(item.originalFile.title == ""){
+						value = value.replaceAll(
+							`![${item.originalFile.alt}](${item.originalURL})`,
+							`![${item.originalFile.alt}](${mrdocUrl}${item.url})`
+							);
+					}else{
+						value = value.replaceAll(
+							`![${item.originalFile.alt}](${item.originalURL} "${item.originalFile.title}")`,
+							`![${item.originalFile.alt}](${mrdocUrl}${item.url} "${item.originalFile.title}")`
+							);
+					}
+				});
+				this.helper.setValue(value);
+				new Notice("外链图片转存完成！")
+			})
 
 		}else if (clipboardData.types.includes('Files')) {
 			if(!this.settings.saveImg) return;
 			evt.preventDefault();
             const files = clipboardData.files;
-			if(files){
-				for (const file of files) {
-					if (file.type.startsWith('image/')) {
-						// console.log('粘贴的图片:', file);
-						let pasteId = (Math.random() + 1).toString(36).substr(2, 5);
-						this.insertTemporaryText(editor, pasteId);
-						const name = file.name;
-						const imgData = {
-							'base64':await imgFileToBase64(file)
-						};
-						const resp = await this.req.uploadImage(imgData)
-						// console.log(resp)
-						if(resp.success == 1){
-							let mrdocUrl = processMrdocUrl(this.settings.mrdocUrl)
-							let imgUrl = `${mrdocUrl}${resp.url}`
-							this.embedMarkDownImage(editor, pasteId, imgUrl, name);
+			if (files.length === 0) return;
+			for (const file of files) {
+				if (file.type.startsWith('image/')) {
+					// console.log('粘贴的图片:', file);
+					let pasteId = (Math.random() + 1).toString(36).substr(2, 5);
+					this.insertTemporaryText(editor, pasteId);
+					const name = file.name;
+					const imgData = {
+						'base64':await imgFileToBase64(file)
+					};
+					const resp = await this.req.uploadImage(imgData)
+					// console.log(resp)
+					if(resp.success == 1){
+						let imgUrl;
+						if(resp.url.startsWith('http')){
+							imgUrl = resp.url;
 						}else{
-							new Notice("粘贴图片上传失败")
+							let mrdocUrl = processMrdocUrl(this.settings.mrdocUrl)
+							imgUrl = `${mrdocUrl}${resp.url}`
 						}
+						this.embedMarkDownImage(editor, pasteId, imgUrl, name);
+					}else{
+						new Notice("粘贴图片上传失败")
 					}
 				}
 			}
@@ -615,7 +618,15 @@ export default class MrdocPlugin extends Plugin {
 		}
 	}
 
-	// 转存valut文档中的图片附件到MrDoc
+	/**
+	 * 转存 Vault 文档中的图片/附件到 MrDoc
+	 *
+	 * 功能：
+	 * 1. 扫描 Markdown 内容中的图片/附件链接（![[xxx]] 或 ![](xxx)）
+	 * 2. 判断是否在白名单域名中，如果在则跳过转存
+	 * 3. 如果是本地图片，则上传到 MrDoc 并替换为远程链接
+	 * 4. 如果是其他附件，则上传并替换为远程链接
+	 */
 	async processAssets(content: string, file: TFile): Promise<string> {
 		const app = this.app;
 		const vault = app.vault;
@@ -627,6 +638,15 @@ export default class MrdocPlugin extends Plugin {
 		  const rawLink = matches[1] || matches[2];
 		  if (!rawLink) continue;
 	  
+		  // 域名白名单判断
+		  const isWhitelisted = this.settings.assetWhitelist?.some(domain =>
+			rawLink.includes(domain)
+		  );
+		  if (isWhitelisted) {
+			console.log(`跳过转存（白名单命中）：${rawLink}`);
+			continue; // 不做任何替换
+		  }
+
 		  const linkedFile = app.metadataCache.getFirstLinkpathDest(rawLink, folder);
 		  if (!linkedFile) continue;
 	  
@@ -685,20 +705,25 @@ export default class MrdocPlugin extends Plugin {
 
 	// 创建 Markdown 文件文档
 	async handleMarkdown(file: TFile) {
-		let content = await this.app.vault.cachedRead(file)
+		let oldContent = await this.app.vault.cachedRead(file);
+    	let newContent = oldContent;
 		let parentValue = await this.getFileParent(file);
 
 		// 处理资源链接
-		if(this.settings.saveImg){
-			content = await this.processAssets(content, file);
-			this.app.vault.modify(file, content) // 重写文件内容
+		if (this.settings.saveImg) {
+			newContent = await this.processAssets(oldContent, file);
+	
+			// 只有在内容确实发生变化时才写回
+			if (oldContent !== newContent) {
+				await this.app.vault.modify(file, newContent);
+			}
 		}
 
 		let doc = {
 		  pid: this.settings.defaultProject,
 		  title: file.basename,
 		  editor_mode: 1,
-		  doc: content,
+		  doc: newContent,
 		  parent_doc: parentValue,
 		};
 		return this.handleDocument(file, doc);
@@ -749,12 +774,18 @@ export default class MrdocPlugin extends Plugin {
 		// 判断是否存在映射
 		let found = this.settings.fileMap.find(item => item.path === file.path)
 		if(found){
-			let content = await this.app.vault.cachedRead(file)
+			// 读取原始内容
+			let oldContent = await this.app.vault.cachedRead(file);
+			let newContent = oldContent;
 
-			// 处理资源链接
+			// 如果开启了图片保存，则处理资源链接
 			if(this.settings.saveImg){
-				content = await this.processAssets(content, file);
-				this.app.vault.modify(file, content) // 重写文件内容
+				newContent = await this.processAssets(oldContent, file);
+			}
+
+			// 只有在内容确实发生变化时才写回
+			if (oldContent !== newContent) {
+				await this.app.vault.modify(file, newContent);
 			}
 
 			let parentValue = await this.getFileParent(file);
@@ -763,7 +794,7 @@ export default class MrdocPlugin extends Plugin {
 				pid:this.settings.defaultProject,
 				did:found.doc_id,
 				title:file.basename,
-				doc:content,
+				doc:newContent,
 				parent_doc: parentValue,
 			}
 			return this.handleModify(doc)
