@@ -81,11 +81,11 @@ export class MrdocSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName('用户 Token')
 			.setClass('mrdoc-settings-input')
-			.setDesc('请输入你的 MrDoc 用户 Token')
+			.setDesc('请输入你的 MrDoc 用户 token')
 			.addText((text) => {
 				wrapTextWithPasswordHide(text);
 				text
-					.setPlaceholder('请输入你的 MrDoc 用户 Token')
+					.setPlaceholder('请输入你的 MrDoc 用户 token')
 					.setValue(this.plugin.settings.mrdocToken)
 					.onChange(async(value) =>{
 						this.plugin.settings.mrdocToken = value;
