@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting,TAbstractFile,TFile,TFolder } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting,TAbstractFile,TFile,TFolder,normalizePath  } from 'obsidian';
 import { MrdocSettingTab, MrdocPluginSettings, DEFAULT_SETTINGS } from './setting';
 import Helper from "./helper";
 import { MrdocApiReq } from "./api";
@@ -48,28 +48,6 @@ export default class MrdocPlugin extends Plugin {
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		// const statusBarItemEl = this.addStatusBarItem();
 		// statusBarItemEl.setText('Status Bar Text');
-
-		// 注册快捷键
-        // this.addCommand({
-        //     id: 'push-file-to-mrdoc', // 唯一标识符
-        //     name: 'Push Content To MrDoc', // 显示的名称
-        //     callback: this.onSave.bind(this), // 回调方法
-        //     hotkeys: [
-        //         {
-        //             modifiers: ['Mod'], // Mod 表示 Command 键（Mac）或 Ctrl 键（Windows）
-        //             key: 'M',
-        //         },
-        //     ],
-        // });
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		// this.addCommand({
-		// 	id: 'open-sample-modal-complex',
-		// 	name: 'Open sample modal (complex)',
-		// 	checkCallback: (checking: boolean) => {
-		// 		// Conditions to check
-		// 		const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-		// 	}
-		// });
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		// 添加一个设置选项卡面板，以便用户配置插件的各个功能
@@ -143,7 +121,7 @@ export default class MrdocPlugin extends Plugin {
 		}
 		let docs = await this.req.getProjectDocs(doc)
 		this.pullInfoArray = []
-		console.log(docs)
+		// console.log(docs)
 		if(docs.status){
 			this.settings.pulling = true
 			await this.saveSettings()
@@ -192,7 +170,7 @@ export default class MrdocPlugin extends Plugin {
 			return
 		};
 		
-		const filePath = `${docPath}.md`
+		const filePath = normalizePath(`${docPath}.md`) // 清理文件路径
 		const fileExits = this.app.vault.getAbstractFileByPath(filePath) // 获取本地文件是否存在，其可能是文件也可能是文件夹
 		const mapExits = this.settings.fileMap.find(item => item.doc_id === doc.id) // 获取文档映射是否存在
 		const mapFileExits = (mapExits && mapExits.path) ? this.app.vault.getAbstractFileByPath(mapExits.path) : false; // 获取文档映射的本地文件是否存在
@@ -656,7 +634,7 @@ export default class MrdocPlugin extends Plugin {
 	  
 		  try {
 			if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) {
-				console.log(linkedFile)
+				// console.log(linkedFile)
 				let imgUrl = await this.uploadLocalImage(linkedFile)
 			  if (imgUrl) {
 				content = content.replace(matches[0], `![](${imgUrl})`);
@@ -833,7 +811,7 @@ export default class MrdocPlugin extends Plugin {
 	  }
 	  
 	// 判断文件类型
-	isFileOrFolder(file: TFile | TFolder): "file" | "folder" | "unknown" {
+	isFileOrFolder(file: TAbstractFile): "file" | "folder" | "unknown" {
 		if (file instanceof TFile) {
 			return "file";
 		} else if (file instanceof TFolder) {
