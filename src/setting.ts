@@ -66,8 +66,6 @@ export class MrdocSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 
 		containerEl.empty();
-		containerEl.createEl('h1',{ text: 'MrDoc'});
-		// containerEl.createEl('h2', { text: '基础' });
 
 		new Setting(containerEl)
 			.setName('MrDoc URL')
